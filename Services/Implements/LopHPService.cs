@@ -1,10 +1,12 @@
-﻿using Server.DbContexts;
+﻿using System;
+using Microsoft.OpenApi.Any;
+using Server.DbContexts;
 using Server.Dtos.Common;
 using Server.Dtos.LopHP;
 using Server.Entities;
 using Server.Exceptions;
 using Server.Services.Interfaces;
-using System;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Server.Services.Implements
 {
@@ -19,9 +21,116 @@ namespace Server.Services.Implements
             _baseService = baseService;
         }
 
+        public PageResultDto<GetAllLopHpDto> GetAll(FilterDto input)
+        {
+            var result = new PageResultDto<GetAllLopHpDto>();
+
+            var resultQuery = _dbContext
+                .ClassHPs.Join(
+                    _dbContext.Subjects,
+                    a => a.SubjectId,
+                    b => b.Id,
+                    (a, b) =>
+                        new
+                        {
+                            a.Id,
+                            a.ClassName,
+                            b.MaHocPhan,
+                            SubjectName = b.Name,
+                            a.SoTinChi,
+                            a.PricePerTinChi,
+                            a.TotalLessons,
+                            a.TeacherId,
+                            RealityStudent = _dbContext.LopHP_Students.Count(c =>
+                                c.LopHpId == a.Id
+                            ),
+                            a.TotalStudents,
+                        }
+                )
+                .Select(lhp => new GetAllLopHpDto
+                {
+                    Id = lhp.Id,
+                    ClassName = lhp.ClassName,
+                    MaHocPhan = lhp.MaHocPhan,
+                    RealityStudent = lhp.RealityStudent,
+                    SubjectName = lhp.SubjectName,
+                    TeacherId = lhp.TeacherId,
+                    PricePerTinChi = lhp.PricePerTinChi,
+                    SoTinChi = lhp.SoTinChi,
+                    TotalLesson = lhp.TotalLessons,
+                    TotalStudents = lhp.TotalStudents,
+                });
+
+            if (!string.IsNullOrEmpty(input.Keyword))
+            {
+                resultQuery = resultQuery.Where(l =>
+                    l.SubjectName.ToLower().Contains(input.Keyword.ToLower())
+                );
+            }
+
+            int totalItems = resultQuery.Count();
+
+            resultQuery = resultQuery.Skip(input.SkipCount()).Take(input.PageSize);
+
+            result.TotalItem = totalItems;
+            result.Items = resultQuery;
+
+            return result;
+        }
+
+        public GetDetailLopHpDto GetDetailLopHp(int lopHpId)
+        {
+            var inforClassQuery = _dbContext
+                .ClassHPs.Where(c => c.Id == lopHpId)
+                .Join(
+                    _dbContext.Subjects,
+                    a => a.SubjectId,
+                    b => b.Id,
+                    (a, b) =>
+                        new
+                        {
+                            a.Id,
+                            a.ClassName,
+                            b.MaHocPhan,
+                            SubjectName = b.Name,
+                            a.SoTinChi,
+                            a.PricePerTinChi,
+                            a.TotalLessons,
+                            a.TeacherId,
+                            RealityStudent = _dbContext.LopHP_Students.Count(c =>
+                                c.LopHpId == a.Id
+                            ),
+                            a.TotalStudents,
+                        }
+                )
+                .Select(lhp => new GetDetailLopHpDto
+                {
+                    Id = lhp.Id,
+                    ClassName = lhp.ClassName,
+                    MaHocPhan = lhp.MaHocPhan,
+                    RealityStudent = lhp.RealityStudent,
+                    SubjectName = lhp.SubjectName,
+                    TeacherId = lhp.TeacherId,
+                    PricePerTinChi = lhp.PricePerTinChi,
+                    SoTinChi = lhp.SoTinChi,
+                    TotalLesson = lhp.TotalLessons,
+                    TotalStudents = lhp.TotalStudents,
+                })
+                .ToList();
+
+            var listSchedule = GetSchedule(lopHpId);
+            var listStudent = GetStudents(lopHpId);
+
+            var result = inforClassQuery[0];
+            result.Schedules = listSchedule;
+            result.Students = listStudent;
+
+            return result;
+        }
+
         public void CreateLopHP(CreateLopHPDto input)
         {
-           var existSubject = _baseService.FindSubjectById(input.SubjectId);
+            var existSubject = _baseService.FindSubjectById(input.SubjectId);
             if (existSubject != null)
             {
                 var newClass = new LopHP
@@ -37,51 +146,6 @@ namespace Server.Services.Implements
                 _dbContext.ClassHPs.Add(newClass);
                 _dbContext.SaveChanges();
             }
-        }
-
-        
-
-        public PageResultDto<LopHpDto> GetAll(FilterDto input)
-        {
-            var result = new PageResultDto<LopHpDto>();
-
-            var query = _dbContext.ClassHPs.Join(_dbContext.Subjects, c => c.SubjectId, s => s.Id, (c, s) => new 
-            {
-                c.Id,
-                c.ClassName,
-                s.MaHocPhan,
-                SubjectName = s.Name,
-                c.TeacherId,
-                s.SoTinChi,
-                c.PricePerTinChi,
-                c.TotalLessons,
-            });
-
-            if (!string.IsNullOrEmpty(input.Keyword))
-            {
-                query = query.Where(c => c.SubjectName.ToLower().Contains(input.Keyword.ToLower()));
-            }
-
-            var formatQuery = query.Select(c => new LopHpDto
-            {
-                Id = c.Id,
-                MaHocPhan = c.MaHocPhan,
-                SubjectName = c.SubjectName,
-                TotalLesson = c.TotalLessons,
-                PricePerTinChi = c.PricePerTinChi,
-                ClassName = c.ClassName,
-                SoTinChi = c.SoTinChi,
-                TeacherId = c.TeacherId,
-            });
-
-            int totalItems = formatQuery.Count();
-
-            formatQuery = formatQuery.Skip(input.SkipCount()).Take(input.PageSize);
-
-            result.TotalItem = totalItems;
-            result.Items = formatQuery;
-
-            return result;
         }
 
         public void CreateScheduleOfLopHP(CreateScheduleOfLopHp input)
@@ -100,7 +164,6 @@ namespace Server.Services.Implements
             else
             {
                 List<DateTime> daysInTimes = new List<DateTime>();
-                Console.WriteLine("date of week", input.DayOfWeek);
 
                 if (input.StartAt > input.EndAt)
                 {
@@ -118,11 +181,8 @@ namespace Server.Services.Implements
                     }
                 }
 
-                Console.WriteLine("Danh sách ngày", daysInTimes);
-
                 foreach (DateTime date in daysInTimes)
                 {
-                    Console.WriteLine("have");
                     var newScheduleOfClassHP = new LopHP_Room
                     {
                         LopHpId = input.LopHpId,
@@ -131,25 +191,95 @@ namespace Server.Services.Implements
                         CaHoc = input.CaHoc,
                     };
 
-                    _dbContext.lopHP_Rooms.Add(newScheduleOfClassHP);
-                _dbContext.SaveChanges();
+                    _dbContext.LopHP_Rooms.Add(newScheduleOfClassHP);
+                    _dbContext.SaveChanges();
                 }
-
-            };
+            }
+            ;
         }
 
-        public List<LopHP_Room> GetSchedule(int lopHpId)
+        public List<GetScheduleDto> GetSchedule(int lopHpId)
         {
-            var existLopHp = _dbContext.lopHP_Rooms.Any(c => c.LopHpId == lopHpId);
+            var existLopHp = _dbContext.LopHP_Rooms.Any(c => c.LopHpId == lopHpId);
 
             if (existLopHp)
             {
-                var scheduleQuery = _dbContext.lopHP_Rooms.Where(sc => sc.LopHpId == lopHpId).ToList();
+                var scheduleQuery = _dbContext
+                    .LopHP_Rooms.Where(sc => sc.LopHpId == lopHpId)
+                    .Join(
+                        _dbContext.Rooms,
+                        sc => sc.RoomId,
+                        r => r.Id,
+                        (sc, r) =>
+                            new GetScheduleDto
+                            {
+                                Id = sc.Id,
+                                LopHpId = lopHpId,
+                                RoomId = sc.RoomId,
+                                RoomName = r.Name + "." + r.Building,
+                                CaHoc = sc.CaHoc,
+                                StartAt = sc.StartAt,
+                                Status = sc.Status,
+                            }
+                    )
+                    .ToList();
                 return scheduleQuery;
             }
             else
             {
-                throw new UserFriendlyException($"Lớp học phần có Id \"{lopHpId}\" chưa có lịch cụ thể");
+                return [];
+                //throw new UserFriendlyException($"Lớp học phần có Id \"{lopHpId}\" chưa có lịch cụ thể");
+            }
+        }
+
+        public List<string> GetStudents(int lopHpId)
+        {
+            var existLopHp = _dbContext.LopHP_Students.Any(c => c.LopHpId == lopHpId);
+            if (existLopHp)
+            {
+                var listStuQuery = _dbContext
+                    .LopHP_Students.Where(c => c.LopHpId == lopHpId)
+                    .Select(c => c.StudentId);
+
+                return listStuQuery.ToList();
+            }
+            else
+            {
+                return [];
+            }
+        }
+
+        public void AddStudents(AddStudentIntoLopHpDto input)
+        {
+            var existLopHp = _dbContext.ClassHPs.Any(c => c.Id == input.LopHpId);
+
+            if (existLopHp)
+            {
+                foreach (var studentId in input.StudentIds)
+                {
+                    var existStudentInClass = _dbContext.LopHP_Students.Any(s =>
+                        s.StudentId == studentId && s.LopHpId == input.LopHpId
+                    );
+
+                    if (!existStudentInClass)
+                    {
+                        var newItem = new LopHP_Student
+                        {
+                            LopHpId = input.LopHpId,
+                            StudentId = studentId,
+                        };
+                        _dbContext.LopHP_Students.Add(newItem);
+                        _dbContext.SaveChanges();
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+            }
+            else
+            {
+                throw new UserFriendlyException($"Không tồn tại lớp học phần {input.LopHpId}");
             }
         }
     }

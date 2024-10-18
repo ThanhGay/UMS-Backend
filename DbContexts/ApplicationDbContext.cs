@@ -8,9 +8,10 @@ namespace Server.DbContexts
         public DbSet<Subject> Subjects { get; set; }
         public DbSet<LopHP> ClassHPs { get; set; }
         public DbSet<Room> Rooms { get; set; }
-        public DbSet<LopHP_Room> lopHP_Rooms { get; set; }
+        public DbSet<LopHP_Room> LopHP_Rooms { get; set; }
         public DbSet<ChuongTrinhKhung> ChuongTrinhKhungs { get; set; }
         public DbSet<MonHoc_ChuongTrinhKhung> DetailCTKs { get; set; }
+        public DbSet<LopHP_Student> LopHP_Students { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
             
@@ -26,7 +27,7 @@ namespace Server.DbContexts
             modelBuilder.Entity<LopHP_Room>().HasOne<LopHP>().WithMany().HasForeignKey(s => s.LopHpId).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<LopHP_Room>().HasOne<Room>().WithMany().HasForeignKey(s => s.RoomId).OnDelete(DeleteBehavior.Restrict);
 
-            
+            modelBuilder.Entity<LopHP_Student>().HasOne<LopHP>().WithMany().HasForeignKey(_ => _.LopHpId).OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
         }

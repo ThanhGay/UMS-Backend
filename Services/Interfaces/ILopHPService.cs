@@ -7,9 +7,11 @@ namespace Server.Services.Interfaces
     public interface ILopHPService
     {
         public void CreateLopHP(CreateLopHPDto input);
-        public PageResultDto<LopHpDto> GetAll(FilterDto input);
+        public PageResultDto<GetAllLopHpDto> GetAll(FilterDto input);
         public void CreateScheduleOfLopHP(CreateScheduleOfLopHp input);
-
-        public List<LopHP_Room> GetSchedule(int lopHpId);
+        public List<GetScheduleDto> GetSchedule(int lopHpId);
+        public List<string> GetStudents(int lopHpId);
+        public void AddStudents(AddStudentIntoLopHpDto input);
+        public GetDetailLopHpDto GetDetailLopHp(int lopHpId);
     }
 }

@@ -17,13 +17,12 @@ namespace Server.Controllers
             _lhpService = lhpService;
         }
 
-        [HttpPost("create")]
-        public IActionResult Create(CreateLopHPDto input)
+        [HttpGet("all")]
+        public IActionResult GetAll(FilterDto input)
         {
             try
             {
-                _lhpService.CreateLopHP(input);
-                return Ok("Tạo lớp thành công");
+                return Ok(_lhpService.GetAll(input));
             }
             catch (Exception ex)
             {
@@ -31,12 +30,28 @@ namespace Server.Controllers
             }
         }
 
-        [HttpGet("all")]
-        public IActionResult GetAll(FilterDto input)
+        [HttpGet("get/{lopHpId}")]
+        public IActionResult GetDetailopHpId(int lopHpId)
+        {
+            {
+                try
+                {
+                    return Ok(_lhpService.GetDetailLopHp(lopHpId));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+            }
+        }
+
+        [HttpPost("create")]
+        public IActionResult Create(CreateLopHPDto input)
         {
             try
             {
-                return Ok(_lhpService.GetAll(input));
+                _lhpService.CreateLopHP(input);
+                return Ok("Tạo lớp thành công");
             }
             catch (Exception ex)
             {
@@ -58,7 +73,21 @@ namespace Server.Controllers
             }
         }
 
-        [HttpGet("schedule/{lopHpId}")]
+        [HttpPost("add-student")]
+        public IActionResult AddStudent(AddStudentIntoLopHpDto input)
+        {
+            try
+            {
+                _lhpService.AddStudents(input);
+                return Ok($"Thêm sinh viên vào lớp có Id {input.LopHpId} thành công");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("get-schedule/{lopHpId}")]
         public IActionResult GetScheduleOfLopHP(int lopHpId)
         {
             try
@@ -69,8 +98,19 @@ namespace Server.Controllers
             {
                 return BadRequest(ex.Message);
             }
-        
         }
-        
+
+        [HttpGet("get-students/{lopHpId}")]
+        public IActionResult GetStudentsOfLopHP(int lopHpId)
+        {
+            try
+            {
+                return Ok(_lhpService.GetStudents(lopHpId));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
