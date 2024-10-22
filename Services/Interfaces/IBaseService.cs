@@ -6,5 +6,6 @@ namespace Server.Services.Interfaces
     {
         public Subject FindSubjectById(int id);
         public Subject FindSubjectByMaHocPhan(string maHocPhan);
+        public string GetRoomName(int roomId);
     }
 }

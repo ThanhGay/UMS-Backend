@@ -1,4 +1,6 @@
-﻿namespace Server.Dtos.LopHP
+﻿using Server.Dtos.Schedule;
+
+namespace Server.Dtos.LopHP
 {
     public class GetDetailLopHpDto
     {

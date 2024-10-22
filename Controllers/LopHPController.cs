@@ -11,10 +11,12 @@ namespace Server.Controllers
     public class LopHPController : ControllerBase
     {
         private readonly ILopHPService _lhpService;
+        private readonly IScheduleService _scheduleService;
 
-        public LopHPController(ILopHPService lhpService)
+        public LopHPController(ILopHPService lhpService, IScheduleService scheduleService)
         {
             _lhpService = lhpService;
+            _scheduleService = scheduleService;
         }
 
         [HttpGet("all")]
@@ -59,19 +61,7 @@ namespace Server.Controllers
             }
         }
 
-        [HttpPost("create-schedule")]
-        public IActionResult CreateScheduleOfLopHP(CreateScheduleOfLopHp input)
-        {
-            try
-            {
-                _lhpService.CreateScheduleOfLopHP(input);
-                return Ok($"Tạo lịch cho lớp có Id {input.LopHpId} thành công");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        
 
         [HttpPost("add-student")]
         public IActionResult AddStudent(AddStudentIntoLopHpDto input)
@@ -87,18 +77,7 @@ namespace Server.Controllers
             }
         }
 
-        [HttpGet("get-schedule/{lopHpId}")]
-        public IActionResult GetScheduleOfLopHP(int lopHpId)
-        {
-            try
-            {
-                return Ok(_lhpService.GetSchedule(lopHpId));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        
 
         [HttpGet("get-students/{lopHpId}")]
         public IActionResult GetStudentsOfLopHP(int lopHpId)
@@ -112,5 +91,19 @@ namespace Server.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("get-lhp-by-student/{studentId}")]
+        public IActionResult GetLopHpByStudentId(string studentId)
+        {
+            try
+            {
+                return Ok(_lhpService.GetAllLopHpByStudentId(studentId));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        
     }
 }

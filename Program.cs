@@ -20,10 +20,13 @@ namespace Server
             builder.Services.AddSwaggerGen();
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy(name: MyAllowSpecificOrigins, policy =>
-                {
-                    policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-                });
+                options.AddPolicy(
+                    name: MyAllowSpecificOrigins,
+                    policy =>
+                    {
+                        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                    }
+                );
             });
 
             builder.Services.AddScoped<IBaseService, BaseService>();
@@ -31,11 +34,11 @@ namespace Server
             builder.Services.AddScoped<IBuildingService, BuildingService>();
             builder.Services.AddScoped<IChuongTrinhKhungService, ChuongTrinhKhungService>();
             builder.Services.AddScoped<ILopHPService, LopHPService>();
+            builder.Services.AddScoped<IScheduleService, ScheduleService>();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
             });
-
 
             var app = builder.Build();
 
@@ -52,11 +55,9 @@ namespace Server
 
             app.MapControllers();
 
-            // http://192.168.59.245:7122/swagger/index.html 
+            // http://192.168.59.245:7122/swagger/index.html
             app.UseStaticFiles();
             app.Run();
-
-            //app.Run();
         }
     }
 }

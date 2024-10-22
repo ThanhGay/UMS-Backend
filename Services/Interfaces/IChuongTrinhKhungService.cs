@@ -8,7 +8,7 @@ namespace Server.Services.Interfaces
     {
         public void CreateCTK(CreateCTKDto input);
         public CTKDto DetailCTK(int id);
-        public CTKDto DetailCTKByChuyenNganhId(int chuyenNganhId);
+        public CTKDto DetailCTKByChuyenNganhId(string chuyenNganhId);
         public PageResultDto<ChuongTrinhKhung> GetAll(FilterDto innput);
         public void DeleteCtk(int id);
     }

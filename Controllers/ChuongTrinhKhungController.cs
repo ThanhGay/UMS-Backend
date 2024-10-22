@@ -44,11 +44,11 @@ namespace Server.Controllers
         }
 
         [HttpGet("get/{chuyenNganhId}")]
-        public IActionResult GetCTKByNganhId(int id)
+        public IActionResult GetCTKByNganhId(string chuyenNganhId)
         {
             try
             {
-                return Ok(_chuongTrinhKhungService.DetailCTKByChuyenNganhId(id));
+                return Ok(_chuongTrinhKhungService.DetailCTKByChuyenNganhId(chuyenNganhId));
             }
             catch (Exception ex)
             {

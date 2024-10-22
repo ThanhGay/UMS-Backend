@@ -35,5 +35,19 @@ namespace Server.Services.Implements
             }
             return existSubject;
         }
+
+        public string GetRoomName(int roomId)
+        {
+            var existRoom = _dbContext.Rooms.FirstOrDefault(r => r.Id == roomId);
+            if (existRoom != null)
+            {
+                var name = existRoom.Name + "." + existRoom.Building;
+                return name;
+
+            } else
+            {
+                throw new UserFriendlyException($"(Không tồn tại phòng có Id: \"{roomId}\"");
+            }
+        }
     }
 }

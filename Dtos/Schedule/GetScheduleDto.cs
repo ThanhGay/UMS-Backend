@@ -1,4 +1,4 @@
-﻿namespace Server.Dtos.LopHP
+﻿namespace Server.Dtos.Schedule
 {
     public class GetScheduleDto
     {

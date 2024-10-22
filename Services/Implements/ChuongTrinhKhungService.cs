@@ -172,7 +172,7 @@ namespace Server.Services.Implements
             }
         }
 
-        public CTKDto DetailCTKByChuyenNganhId(int chuyenNganhId)
+        public CTKDto DetailCTKByChuyenNganhId(string chuyenNganhId)
         {
             var existCTK = _dbContext.ChuongTrinhKhungs.FirstOrDefault(s =>
                 s.ChuyenNganhId.Equals(chuyenNganhId)

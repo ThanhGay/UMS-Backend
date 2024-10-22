@@ -14,11 +14,17 @@ namespace Server.Services.Implements
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly IBaseService _baseService;
+        private readonly IScheduleService _scheduleService;
 
-        public LopHPService(ApplicationDbContext dbContext, IBaseService baseService)
+        public LopHPService(
+            ApplicationDbContext dbContext,
+            IBaseService baseService,
+            IScheduleService scheduleService
+        )
         {
             _dbContext = dbContext;
             _baseService = baseService;
+            _scheduleService = scheduleService;
         }
 
         public PageResultDto<GetAllLopHpDto> GetAll(FilterDto input)
@@ -118,7 +124,7 @@ namespace Server.Services.Implements
                 })
                 .ToList();
 
-            var listSchedule = GetSchedule(lopHpId);
+            var listSchedule = _scheduleService.GetScheduleOfClassHp(lopHpId);
             var listStudent = GetStudents(lopHpId);
 
             var result = inforClassQuery[0];
@@ -145,90 +151,6 @@ namespace Server.Services.Implements
 
                 _dbContext.ClassHPs.Add(newClass);
                 _dbContext.SaveChanges();
-            }
-        }
-
-        public void CreateScheduleOfLopHP(CreateScheduleOfLopHp input)
-        {
-            var existClassHP = _dbContext.ClassHPs.Any(c => c.Id == input.LopHpId);
-            var existRoom = _dbContext.Rooms.Any(r => r.Id == input.RoomId);
-
-            if (!existRoom)
-            {
-                throw new UserFriendlyException($"Không tồn tại phòng có Id {input.RoomId}");
-            }
-            else if (!existClassHP)
-            {
-                throw new UserFriendlyException($"Không tồn tại lớp học phần {input.LopHpId}");
-            }
-            else
-            {
-                List<DateTime> daysInTimes = new List<DateTime>();
-
-                if (input.StartAt > input.EndAt)
-                {
-                    throw new ArgumentException("Ngày bắt đầu phải lớn hơn ngày kết thúc.");
-                }
-
-                // Iterate through each day in the range
-                for (DateTime date = input.StartAt; date <= input.EndAt; date = date.AddDays(1))
-                {
-                    // Check if the current day is the specified dayOfWeek
-                    if (date.DayOfWeek == input.DayOfWeek)
-                    {
-                        Console.WriteLine("same");
-                        daysInTimes.Add(date);
-                    }
-                }
-
-                foreach (DateTime date in daysInTimes)
-                {
-                    var newScheduleOfClassHP = new LopHP_Room
-                    {
-                        LopHpId = input.LopHpId,
-                        RoomId = input.RoomId,
-                        StartAt = date,
-                        CaHoc = input.CaHoc,
-                    };
-
-                    _dbContext.LopHP_Rooms.Add(newScheduleOfClassHP);
-                    _dbContext.SaveChanges();
-                }
-            }
-            ;
-        }
-
-        public List<GetScheduleDto> GetSchedule(int lopHpId)
-        {
-            var existLopHp = _dbContext.LopHP_Rooms.Any(c => c.LopHpId == lopHpId);
-
-            if (existLopHp)
-            {
-                var scheduleQuery = _dbContext
-                    .LopHP_Rooms.Where(sc => sc.LopHpId == lopHpId)
-                    .Join(
-                        _dbContext.Rooms,
-                        sc => sc.RoomId,
-                        r => r.Id,
-                        (sc, r) =>
-                            new GetScheduleDto
-                            {
-                                Id = sc.Id,
-                                LopHpId = lopHpId,
-                                RoomId = sc.RoomId,
-                                RoomName = r.Name + "." + r.Building,
-                                CaHoc = sc.CaHoc,
-                                StartAt = sc.StartAt,
-                                Status = sc.Status,
-                            }
-                    )
-                    .ToList();
-                return scheduleQuery;
-            }
-            else
-            {
-                return [];
-                //throw new UserFriendlyException($"Lớp học phần có Id \"{lopHpId}\" chưa có lịch cụ thể");
             }
         }
 
@@ -280,6 +202,50 @@ namespace Server.Services.Implements
             else
             {
                 throw new UserFriendlyException($"Không tồn tại lớp học phần {input.LopHpId}");
+            }
+        }
+
+        public List<AllLopHpByStudentIdDto> GetAllLopHpByStudentId(string studentId)
+        {
+            var existStudent = _dbContext.LopHP_Students.Any(s => s.StudentId.Equals(studentId));
+            if (existStudent)
+            {
+                var query = _dbContext
+                    .LopHP_Students.Where(s => s.StudentId.Equals(studentId))
+                    .Join(
+                        _dbContext.ClassHPs,
+                        s => s.LopHpId,
+                        c => c.Id,
+                        (s, c) =>
+                            new
+                            {
+                                c.ClassName,
+                                c.TeacherId,
+                                LopHpId = c.Id,
+                                c.SubjectId,
+                                SubjectName = _dbContext
+                                    .Subjects.Where(s => s.Id == c.SubjectId)
+                                    .Select(s => s.Name)
+                                    .ToList(),
+                            }
+                    );
+
+                var resultQuery = query
+                    .Select(r => new AllLopHpByStudentIdDto
+                    {
+                        TeacherId = r.TeacherId,
+                        ClassName = r.ClassName,
+                        SubjectId = r.SubjectId,
+                        LopHpId = r.LopHpId,
+                        SubjectName = r.SubjectName[0],
+                    })
+                    .ToList();
+
+                return resultQuery;
+            }
+            else
+            {
+                return [];
             }
         }
     }
