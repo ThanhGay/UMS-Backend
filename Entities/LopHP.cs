@@ -10,8 +10,8 @@ namespace Server.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string? ClassName { get; set; }
-        public int SubjectId { get; set; }
-        public required string TeacherId { get; set; }
+        public required string MaMonHoc { get; set; }
+        public required string TenMonHoc { get; set; }
         public int SoTinChi { get; set; }
         public int PricePerTinChi { get; set; }
         public int TotalLessons { get; set; }

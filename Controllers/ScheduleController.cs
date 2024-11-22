@@ -30,7 +30,7 @@ namespace Server.Controllers
             }
         }
 
-        [HttpGet("get/lopHp/{lopHpId}")]
+        [HttpGet("lopHp/{lopHpId}")]
         public IActionResult GetScheduleOfLopHP(int lopHpId)
         {
             try
@@ -43,12 +43,26 @@ namespace Server.Controllers
             }
         }
 
-        [HttpGet("get/teacher/{teacherId}")]
+        [HttpGet("teacher/{teacherId}")]
         public IActionResult GetScheduleOfTeacher(string teacherId)
         {
             try
             {
                 return Ok(_scheduleService.ScheduleOfTeacher(teacherId));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut("postpone/{scId}")]
+        public IActionResult PostPoneALesson(int scId)
+        {
+            try
+            {
+                _scheduleService.PostponeLesson(scId);
+                return Ok($"Đã tạm ngưng tiết học {scId}");
             }
             catch (Exception ex)
             {

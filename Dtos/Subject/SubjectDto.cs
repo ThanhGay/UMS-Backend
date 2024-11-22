@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public required string Name { get; set; }
-        public required string MaHocPhan { get; set; }
+        public required string MaMonHoc { get; set; }
         public int SoTinChi { get; set; }
         public required string BoMonId { get; set; }
         public DateTime CreateAt { get; set; }

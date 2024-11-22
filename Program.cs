@@ -30,7 +30,6 @@ namespace Server
             });
 
             builder.Services.AddScoped<IBaseService, BaseService>();
-            builder.Services.AddScoped<ISubjectService, SubjectService>();
             builder.Services.AddScoped<IBuildingService, BuildingService>();
             builder.Services.AddScoped<IChuongTrinhKhungService, ChuongTrinhKhungService>();
             builder.Services.AddScoped<ILopHPService, LopHPService>();

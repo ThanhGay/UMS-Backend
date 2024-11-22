@@ -19,19 +19,29 @@ namespace Server.Services.Implements
 
         public void CreateScheduleOfClassHP(CreateScheduleOfLopHp input)
         {
-            var existClassHP = _dbContext.ClassHPs.Any(c => c.Id == input.LopHpId);
+            var existClassHP = _dbContext.ClassHPs.FirstOrDefault(c => c.Id == input.LopHpId);
             var existRoom = _dbContext.Rooms.Any(r => r.Id == input.RoomId);
+            var existTeacher = _dbContext.LopHP_Teachers.Any(t => t.TeacherId == input.TeacherId && t.LopHpId == input.LopHpId);
 
             if (!existRoom)
             {
                 throw new UserFriendlyException($"Không tồn tại phòng có Id {input.RoomId}");
             }
-            else if (!existClassHP)
+            else if (existClassHP == null)
             {
                 throw new UserFriendlyException($"Không tồn tại lớp học phần {input.LopHpId}");
             }
+            else if (!existTeacher)
+            {
+                throw new Exception(
+                    $"Giảng viên \"{input.TeacherId}\" chưa được tham gia lớp học này"
+                );
+            }
             else
             {
+                var totalExistLesson = existClassHP.TotalLessons -  _dbContext.LopHP_Rooms.Count(r => r.LopHpId == input.LopHpId);
+
+
                 List<DateTime> daysInTimes = new List<DateTime>();
 
                 if (input.StartAt > input.EndAt)
@@ -45,23 +55,31 @@ namespace Server.Services.Implements
                     // Check if the current day is the specified dayOfWeek
                     if (date.DayOfWeek == input.DayOfWeek)
                     {
-                        Console.WriteLine("same");
                         daysInTimes.Add(date);
                     }
                 }
+                var totalLessonInput = daysInTimes.Count;
 
-                foreach (DateTime date in daysInTimes)
+                if (totalLessonInput > 0 && totalLessonInput < totalExistLesson)
                 {
-                    var newScheduleOfClassHP = new LopHP_Room
-                    {
-                        LopHpId = input.LopHpId,
-                        RoomId = input.RoomId,
-                        StartAt = date,
-                        CaHoc = input.CaHoc,
-                    };
 
-                    _dbContext.LopHP_Rooms.Add(newScheduleOfClassHP);
-                    _dbContext.SaveChanges();
+                    foreach (DateTime date in daysInTimes)
+                    {
+                        var newScheduleOfClassHP = new LopHP_Room
+                        {
+                            LopHpId = input.LopHpId,
+                            RoomId = input.RoomId,
+                            StartAt = date,
+                            CaHoc = input.CaHoc,
+                            TeacherId = input.TeacherId,
+                        };
+
+                        _dbContext.LopHP_Rooms.Add(newScheduleOfClassHP);
+                        _dbContext.SaveChanges();
+                    }
+                } else
+                {
+                    throw new Exception($"Số buổi chèn vào ({totalLessonInput}) nhiều hơn tổng số buổi học của lớp ({existClassHP.TotalLessons}). Hiện còn {totalExistLesson} buổi.");
                 }
             }
             ;
@@ -89,8 +107,9 @@ namespace Server.Services.Implements
                                 CaHoc = sc.CaHoc,
                                 StartAt = sc.StartAt,
                                 Status = sc.Status,
+                                TeacherId = sc.TeacherId,
                             }
-                    )
+                    ).OrderBy(sc => sc.StartAt)
                     .ToList();
                 return scheduleQuery;
             }
@@ -101,34 +120,39 @@ namespace Server.Services.Implements
             }
         }
 
+        public void PostponeLesson(int id)
+        {
+            var existItem = _dbContext.LopHP_Rooms.FirstOrDefault(sc => sc.Id == id);
+            if (existItem != null)
+            {
+                existItem.Status = 2;
+
+                _dbContext.LopHP_Rooms.Update(existItem);
+                _dbContext.SaveChanges();
+            }else
+            {
+                throw new Exception("Không tìm thấy");
+            }
+        }
+
         public List<ScheduleTeacherDto> ScheduleOfTeacher(string teacherId)
         {
-            var existTeacherSchedule = _dbContext.ClassHPs.Any(c => c.TeacherId.Equals(teacherId));
+            /*
+             * Query SQL
+             * 
+             * Declare @TeacherId nvarchar(255) = '2165'
+             * print @TeacherId
+             * 
+             * select A.Id, B.ClassName, A.CaHoc, Room.Id as RoomId, A.StartAt, C.Name as SubjectName, A.Status 
+             * from LopHP_Room as A join Room on A.RoomId = Room.Id join LopHP as B on A.LopHpId = B.Id join Subject as C on B.MaMonHoc = C.Id
+             * where TeacherId = @TeacherId
+             *
+             */
+
+            var existTeacherSchedule = _dbContext.LopHP_Rooms.Any(c => c.TeacherId == teacherId);
             if (existTeacherSchedule)
             {
-                var scheduleQuery = _dbContext.ClassHPs.Where(c => c.TeacherId.Equals(teacherId)).Join(_dbContext.LopHP_Rooms, c => c.Id, sc => sc.LopHpId, (c, sc) =>
-                new
-                {
-                    sc.Id,
-                    c.ClassName,
-                    SubjectName = _dbContext.Subjects.Where(s => s.Id == c.SubjectId).Select(s => s.Name).ToList(),
-                    c.TeacherId,
-                    sc.LopHpId,
-                    sc.CaHoc,
-                    sc.StartAt,
-                    sc.RoomId,
-                }).Select(r => new ScheduleTeacherDto
-                {
-                    Id = r.Id,
-                    ClassName = r.ClassName,
-                    CaHoc = r.CaHoc,
-                    StartAt = r.StartAt,
-                    SubjectName = r.SubjectName[0],
-                    RoomName = r.RoomId.ToString(),
-                });
-
-                
-            return scheduleQuery.ToList();
+                return [];
             }
             else
             {

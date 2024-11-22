@@ -12,15 +12,15 @@ using Server.DbContexts;
 namespace Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241017042535_InitDb2")]
-    partial class InitDb2
+    [Migration("20241122143259_InitDb1")]
+    partial class InitDb1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -59,16 +59,17 @@ namespace Server.Migrations
                     b.Property<string>("ClassName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("MaMonHoc")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("PricePerTinChi")
                         .HasColumnType("int");
 
                     b.Property<int>("SoTinChi")
                         .HasColumnType("int");
 
-                    b.Property<int>("SubjectId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TeacherId")
+                    b.Property<string>("TenMonHoc")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -79,8 +80,6 @@ namespace Server.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("SubjectId");
 
                     b.ToTable("LopHP");
                 });
@@ -108,6 +107,10 @@ namespace Server.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<string>("TeacherId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("LopHpId");
@@ -125,13 +128,13 @@ namespace Server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("DiemCC")
+                    b.Property<double?>("DiemCC")
                         .HasColumnType("float");
 
-                    b.Property<double>("DiemCK")
+                    b.Property<double?>("DiemCK")
                         .HasColumnType("float");
 
-                    b.Property<double>("DiemGK")
+                    b.Property<double?>("DiemGK")
                         .HasColumnType("float");
 
                     b.Property<double?>("DiemKT")
@@ -154,6 +157,28 @@ namespace Server.Migrations
                     b.ToTable("LopHP_Student");
                 });
 
+            modelBuilder.Entity("Server.Entities.LopHP_Teacher", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("LopHpId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TeacherId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LopHpId");
+
+                    b.ToTable("LopHP_Teacher");
+                });
+
             modelBuilder.Entity("Server.Entities.MonHoc_ChuongTrinhKhung", b =>
                 {
                     b.Property<int>("Id")
@@ -172,8 +197,9 @@ namespace Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("SubjectId")
-                        .HasColumnType("int");
+                    b.Property<string>("MaMonHoc")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdateAt")
                         .HasColumnType("datetime2");
@@ -181,8 +207,6 @@ namespace Server.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ChuongTrinhKhungId");
-
-                    b.HasIndex("SubjectId");
 
                     b.ToTable("MonHoc_ChuongTrinhKhung");
                 });
@@ -208,49 +232,6 @@ namespace Server.Migrations
                     b.ToTable("Room");
                 });
 
-            modelBuilder.Entity("Server.Entities.Subject", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("BoMonId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("MaHocPhan")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("SoTinChi")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Subject");
-                });
-
-            modelBuilder.Entity("Server.Entities.LopHP", b =>
-                {
-                    b.HasOne("Server.Entities.Subject", null)
-                        .WithMany()
-                        .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Server.Entities.LopHP_Room", b =>
                 {
                     b.HasOne("Server.Entities.LopHP", null)
@@ -271,7 +252,16 @@ namespace Server.Migrations
                     b.HasOne("Server.Entities.LopHP", null)
                         .WithMany()
                         .HasForeignKey("LopHpId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Entities.LopHP_Teacher", b =>
+                {
+                    b.HasOne("Server.Entities.LopHP", null)
+                        .WithMany()
+                        .HasForeignKey("LopHpId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -280,12 +270,6 @@ namespace Server.Migrations
                     b.HasOne("Server.Entities.ChuongTrinhKhung", null)
                         .WithMany()
                         .HasForeignKey("ChuongTrinhKhungId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Server.Entities.Subject", null)
-                        .WithMany()
-                        .HasForeignKey("SubjectId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

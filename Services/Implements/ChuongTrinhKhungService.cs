@@ -41,37 +41,39 @@ namespace Server.Services.Implements
                 _dbContext.ChuongTrinhKhungs.Add(newCTK);
                 _dbContext.SaveChanges();
 
-                foreach (var item in input.Details)
-                {
-                    foreach (var monId in item.MonHocIds)
-                    {
-                        var existSubject = _dbContext.Subjects.Any(s => s.Id == monId);
-                        if (!existSubject)
-                        {
-                            throw new UserFriendlyException($"Không tồn tại môn \"{monId}\"");
-                        }
-                    }
-                }
+                //foreach (var item in input.Details)
+                //{
+                //    foreach (var monId in item.MonHocIds)
+                //    {
+                //        var existSubject = _dbContext.Subjects.Any(s => s.Id == monId);
+                //        if (!existSubject)
+                //        {
+                //            throw new UserFriendlyException($"Không tồn tại môn \"{monId}\"");
+                //        }
+                //    }
+                //}
 
+
+                // tính tổng tín chỉ
                 int totalCredits = 0;
                 foreach (var item in input.Details)
                 {
-                    foreach (var monId in item.MonHocIds)
+                    foreach (var monId in item.MaMonHocs)
                     {
                         var newDetailCTK = new MonHoc_ChuongTrinhKhung
                         {
                             KiHoc = item.KiHoc,
-                            SubjectId = monId,
+                            MaMonHoc = monId,
                             ChuongTrinhKhungId = newCTK.Id,
                             CreateAt = DateTime.Now,
                             UpdateAt = DateTime.Now,
                         };
 
-                        var exSub = _baseService.FindSubjectById(monId);
-                        if (exSub != null)
-                        {
-                            totalCredits += exSub.SoTinChi;
-                        }
+                        //var exSub = _baseService.FindSubjectById(monId);
+                        //if (exSub != null)
+                        //{
+                        //    totalCredits += exSub.SoTinChi;
+                        //}
 
                         _dbContext.DetailCTKs.Add(newDetailCTK);
                     }
@@ -116,22 +118,22 @@ namespace Server.Services.Implements
             {
                 // join detailCtk with Subject to get information of subject
                 var queryDetailCTKJoinSubJect = _dbContext
-                    .DetailCTKs.Where(dCtk => dCtk.ChuongTrinhKhungId == id)
-                    .Join(
-                        _dbContext.Subjects,
-                        d => d.SubjectId,
-                        s => s.Id,
-                        (d, s) =>
-                            new
-                            {
-                                d.Id,
-                                SubjectId = s.Id,
-                                SubjectName = s.Name,
-                                s.SoTinChi,
-                                s.MaHocPhan,
-                                d.KiHoc,
-                            }
-                    );
+                    .DetailCTKs.Where(dCtk => dCtk.ChuongTrinhKhungId == id);
+                    //.Join(
+                    //    _dbContext.Subjects,
+                    //    d => d.MaMonHoc,
+                    //    s => s.Id,
+                    //    (d, s) =>
+                    //        new
+                    //        {
+                    //            d.Id,
+                    //            SubjectId = s.Id,
+                    //            SubjectName = s.Name,
+                    //            s.SoTinChi,
+                    //            s.MaMonHoc,
+                    //            d.KiHoc,
+                    //        }
+                    //);
 
                 // group by ki hoc
                 var group = queryDetailCTKJoinSubJect
@@ -142,10 +144,10 @@ namespace Server.Services.Implements
                         Subjects = g.Select(s => new DetailCTK_Subject_Dto
                             {
                                 Id = s.Id,
-                                SubjectId = s.SubjectId,
-                                SubjectName = s.SubjectName,
-                                SoTinChi = s.SoTinChi,
-                                MaHocPhan = s.MaHocPhan,
+                                MaMonHoc = s.MaMonHoc,
+                                //SubjectName = s.SubjectName,
+                                //SoTinChi = s.SoTinChi,
+                                //MaMonHoc = s.MaMonHoc,
                             })
                             .ToList(),
                     });
@@ -187,22 +189,22 @@ namespace Server.Services.Implements
             {
                 // join detailCtk with Subject to get information of subject
                 var queryDetailCTKJoinSubJect = _dbContext
-                    .DetailCTKs.Where(dCtk => dCtk.ChuongTrinhKhungId == existCTK.Id)
-                    .Join(
-                        _dbContext.Subjects,
-                        d => d.SubjectId,
-                        s => s.Id,
-                        (d, s) =>
-                            new
-                            {
-                                d.Id,
-                                SubjectId = s.Id,
-                                SubjectName = s.Name,
-                                s.SoTinChi,
-                                s.MaHocPhan,
-                                d.KiHoc,
-                            }
-                    );
+                    .DetailCTKs.Where(dCtk => dCtk.ChuongTrinhKhungId == existCTK.Id);
+                    //.Join(
+                    //    _dbContext.Subjects,
+                    //    d => d.MaMonHoc,
+                    //    s => s.Id,
+                    //    (d, s) =>
+                    //        new
+                    //        {
+                    //            d.Id,
+                    //            SubjectId = s.Id,
+                    //            SubjectName = s.Name,
+                    //            s.SoTinChi,
+                    //            s.MaMonHoc,
+                    //            d.KiHoc,
+                    //        }
+                    //);
 
                 // group by ki hoc
                 var group = queryDetailCTKJoinSubJect
@@ -213,10 +215,10 @@ namespace Server.Services.Implements
                         Subjects = g.Select(s => new DetailCTK_Subject_Dto
                             {
                                 Id = s.Id,
-                                SubjectId = s.SubjectId,
-                                SubjectName = s.SubjectName,
-                                SoTinChi = s.SoTinChi,
-                                MaHocPhan = s.MaHocPhan,
+                                MaMonHoc = s.MaMonHoc,
+                                //SubjectName = s.SubjectName,
+                                //SoTinChi = s.SoTinChi,
+                                //MaMonHoc = s.MaMonHoc,
                             })
                             .ToList(),
                     });

@@ -9,7 +9,7 @@ namespace Server.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public int SubjectId { get; set; }
+        public required string MaMonHoc { get; set; }
         public int ChuongTrinhKhungId { get; set; }
         public required string KiHoc { get; set; }
         public DateTime CreateAt { get; set; }

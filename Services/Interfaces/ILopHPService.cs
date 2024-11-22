@@ -11,5 +11,7 @@ namespace Server.Services.Interfaces
         public void AddStudents(AddStudentIntoLopHpDto input);
         public GetDetailLopHpDto GetDetailLopHp(int lopHpId);
         public List<AllLopHpByStudentIdDto> GetAllLopHpByStudentId(string studentId);
+        public void AddTeacherToLopHp(AddTeacherIntoLopHpDto input);
+        public void DeleteLopHP (int lopHpId);
     }
 }

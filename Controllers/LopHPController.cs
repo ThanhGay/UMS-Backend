@@ -61,8 +61,6 @@ namespace Server.Controllers
             }
         }
 
-        
-
         [HttpPost("add-student")]
         public IActionResult AddStudent(AddStudentIntoLopHpDto input)
         {
@@ -77,7 +75,19 @@ namespace Server.Controllers
             }
         }
 
-        
+        [HttpPost("add-teacher")]
+        public IActionResult AddTeacher(AddTeacherIntoLopHpDto input)
+        {
+            try
+            {
+                _lhpService.AddTeacherToLopHp(input);
+                return Ok($"Chỉ định giảng viên cho lớp có Id: {input.LopHpId} thành công");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         [HttpGet("get-students/{lopHpId}")]
         public IActionResult GetStudentsOfLopHP(int lopHpId)
@@ -104,6 +114,19 @@ namespace Server.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        
+
+        [HttpDelete("delete/{lopHpId}")]
+        public IActionResult DeleteClassHp(int lopHpId)
+        {
+            try
+            {
+                _lhpService.DeleteLopHP(lopHpId);
+                return Ok($"Đã xóa lớp học phần {lopHpId}");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
