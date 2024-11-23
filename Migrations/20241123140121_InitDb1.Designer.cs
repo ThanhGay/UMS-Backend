@@ -12,8 +12,8 @@ using Server.DbContexts;
 namespace Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241122133553_InitDb4")]
-    partial class InitDb4
+    [Migration("20241123140121_InitDb1")]
+    partial class InitDb1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -59,7 +59,7 @@ namespace Server.Migrations
                     b.Property<string>("ClassName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("MaHocPhan")
+                    b.Property<string>("MaMonHoc")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -68,6 +68,10 @@ namespace Server.Migrations
 
                     b.Property<int>("SoTinChi")
                         .HasColumnType("int");
+
+                    b.Property<string>("TenMonHoc")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("TotalLessons")
                         .HasColumnType("int");
@@ -233,7 +237,7 @@ namespace Server.Migrations
                     b.HasOne("Server.Entities.LopHP", null)
                         .WithMany()
                         .HasForeignKey("LopHpId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Server.Entities.Room", null)

@@ -296,6 +296,7 @@ namespace Server.Services.Implements
                         var listTeacherInClass = _dbContext.LopHP_Teachers.Where(t =>
                             t.LopHpId == lopHpId
                         );
+                        var listSchedule = _dbContext.LopHP_Rooms.Where(r => r.LopHpId == lopHpId );
 
                         foreach (var item in listStudentInClass)
                         {
@@ -309,6 +310,7 @@ namespace Server.Services.Implements
 
                         _dbContext.LopHP_Students.RemoveRange(listStudentInClass);
                         _dbContext.LopHP_Teachers.RemoveRange(listTeacherInClass);
+                        _dbContext.LopHP_Rooms.RemoveRange(listSchedule);
                         _dbContext.ClassHPs.Remove(existClass);
 
                         _dbContext.SaveChanges();

@@ -234,7 +234,7 @@ namespace Server.Migrations
                     b.HasOne("Server.Entities.LopHP", null)
                         .WithMany()
                         .HasForeignKey("LopHpId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Server.Entities.Room", null)

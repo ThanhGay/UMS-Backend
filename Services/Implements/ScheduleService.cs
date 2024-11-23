@@ -60,7 +60,7 @@ namespace Server.Services.Implements
                 }
                 var totalLessonInput = daysInTimes.Count;
 
-                if (totalLessonInput > 0 && totalLessonInput < totalExistLesson)
+                if (totalLessonInput > 0 && totalLessonInput <= totalExistLesson)
                 {
 
                     foreach (DateTime date in daysInTimes)
