@@ -8,6 +8,7 @@ namespace Server.Services.Interfaces
         public void CreateLopHP(CreateLopHPDto input);
         public PageResultDto<GetAllLopHpDto> GetAll(FilterDto input);
         public List<string> GetStudents(int lopHpId);
+        public List<string> GetTeachers(int lopHpId);
         public void AddStudents(AddStudentIntoLopHpDto input);
         public GetDetailLopHpDto GetDetailLopHp(int lopHpId);
         public List<AllLopHpByStudentIdDto> GetAllLopHpByStudentId(string studentId);

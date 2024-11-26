@@ -102,6 +102,19 @@ namespace Server.Controllers
             }
         }
 
+        [HttpGet("get-teachers/{lopHpId}")]
+        public IActionResult GetTeachersOfLopHP(int lopHpId)
+        {
+            try
+            {
+                return Ok(_lhpService.GetTeachers(lopHpId));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("get-lhp-by-student/{studentId}")]
         public IActionResult GetLopHpByStudentId(string studentId)
         {
