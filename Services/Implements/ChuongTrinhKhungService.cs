@@ -107,6 +107,73 @@ namespace Server.Services.Implements
             return result;
         }
 
+        //public CTKDto DetailCTK(int id)
+        //{
+        //    var existCTK = _dbContext.ChuongTrinhKhungs.FirstOrDefault(s => s.Id == id);
+        //    if (existCTK == null)
+        //    {
+        //        throw new UserFriendlyException($"Chưa tồn tại chương trình khung có Id: {id}");
+        //    }
+        //    else
+        //    {
+        //        // join detailCtk with Subject to get information of subject
+        //        var queryDetailCTKJoinSubJect = _dbContext
+        //            .DetailCTKs.Where(dCtk => dCtk.ChuongTrinhKhungId == id);
+        //            .Join(
+        //                _dbContext.Subjects,
+        //                d => d.MaMonHoc,
+        //                s => s.Id,
+        //                (d, s) =>
+        //                    new
+        //                    {
+        //                        d.Id,
+        //                        SubjectId = s.Id,
+        //                        SubjectName = s.Name,
+        //                        s.SoTinChi,
+        //                        s.MaMonHoc,
+        //                        d.KiHoc,
+        //                    }
+        //            );
+
+        //        // group by ki hoc
+        //        var group = queryDetailCTKJoinSubJect
+        //            .GroupBy(dCtk => dCtk.KiHoc)
+        //            .Select(g => new
+        //            {
+        //                KiHoc = g.Key,
+        //                Subjects = g.Select(s => new DetailCTK_Subject_Dto
+        //                    {
+        //                        Id = s.Id,
+        //                        MaMonHoc = s.MaMonHoc,
+        //                        SubjectName = s.SubjectName,
+        //                        SoTinChi = s.SoTinChi,
+        //                        MaMonHoc = s.MaMonHoc,
+        //                })
+        //                    .ToList(),
+        //            });
+
+        //        // create list to restore information about Thong tin chi tiet chuong trinh khung cua tung ki hoc
+        //        var listSemester = new List<SemesterDto>();
+
+        //        foreach (var item in group)
+        //        {
+        //            listSemester.Add(
+        //                new SemesterDto { KiHoc = item.KiHoc, Subjects = item.Subjects }
+        //            );
+        //        }
+
+        //        var rtnCTK = new CTKDto
+        //        {
+        //            Id = existCTK.Id,
+        //            ChuyenNganhId = existCTK.ChuyenNganhId,
+        //            TongTinChi = existCTK.TongTinChi,
+        //            detailCTKByKiHocDtos = listSemester,
+        //        };
+
+        //        return rtnCTK;
+        //    }
+        //}
+
         public CTKDto DetailCTK(int id)
         {
             var existCTK = _dbContext.ChuongTrinhKhungs.FirstOrDefault(s => s.Id == id);
@@ -116,46 +183,19 @@ namespace Server.Services.Implements
             }
             else
             {
-                // join detailCtk with Subject to get information of subject
-                var queryDetailCTKJoinSubJect = _dbContext
-                    .DetailCTKs.Where(dCtk => dCtk.ChuongTrinhKhungId == id);
-                    //.Join(
-                    //    _dbContext.Subjects,
-                    //    d => d.MaMonHoc,
-                    //    s => s.Id,
-                    //    (d, s) =>
-                    //        new
-                    //        {
-                    //            d.Id,
-                    //            SubjectId = s.Id,
-                    //            SubjectName = s.Name,
-                    //            s.SoTinChi,
-                    //            s.MaMonHoc,
-                    //            d.KiHoc,
-                    //        }
-                    //);
-
-                // group by ki hoc
-                var group = queryDetailCTKJoinSubJect
+                var queryCtk = _dbContext
+                    .DetailCTKs.Where(c => c.ChuongTrinhKhungId == id)
                     .GroupBy(dCtk => dCtk.KiHoc)
                     .Select(g => new
                     {
                         KiHoc = g.Key,
-                        Subjects = g.Select(s => new DetailCTK_Subject_Dto
-                            {
-                                Id = s.Id,
-                                MaMonHoc = s.MaMonHoc,
-                                //SubjectName = s.SubjectName,
-                                //SoTinChi = s.SoTinChi,
-                                //MaMonHoc = s.MaMonHoc,
-                            })
-                            .ToList(),
+                        Subjects = g.Select(s => s.MaMonHoc).ToList(),
                     });
 
                 // create list to restore information about Thong tin chi tiet chuong trinh khung cua tung ki hoc
                 var listSemester = new List<SemesterDto>();
 
-                foreach (var item in group)
+                foreach (var item in queryCtk)
                 {
                     listSemester.Add(
                         new SemesterDto { KiHoc = item.KiHoc, Subjects = item.Subjects }
@@ -166,7 +206,7 @@ namespace Server.Services.Implements
                 {
                     Id = existCTK.Id,
                     ChuyenNganhId = existCTK.ChuyenNganhId,
-                    TongTinChi = existCTK.TongTinChi,
+                    //TongTinChi = existCTK.TongTinChi,
                     detailCTKByKiHocDtos = listSemester,
                 };
 
@@ -174,10 +214,81 @@ namespace Server.Services.Implements
             }
         }
 
+        //public CTKDto DetailCTKByChuyenNganhId(string chuyenNganhId)
+        //{
+        //    var existCTK = _dbContext.ChuongTrinhKhungs.FirstOrDefault(s =>
+        //        s.ChuyenNganhId.Equals(chuyenNganhId)
+        //    );
+        //    if (existCTK == null)
+        //    {
+        //        throw new UserFriendlyException(
+        //            $"Chưa tồn tại chương trình khung của chuyên ngành: {chuyenNganhId}"
+        //        );
+        //    }
+        //    else
+        //    {
+        //        // join detailCtk with Subject to get information of subject
+        //        var queryDetailCTKJoinSubJect = _dbContext
+        //            .DetailCTKs.Where(dCtk => dCtk.ChuongTrinhKhungId == existCTK.Id);
+        //            .Join(
+        //                _dbContext.Subjects,
+        //                d => d.MaMonHoc,
+        //                s => s.Id,
+        //                (d, s) =>
+        //                    new
+        //                    {
+        //                        d.Id,
+        //                        SubjectId = s.Id,
+        //                        SubjectName = s.Name,
+        //                        s.SoTinChi,
+        //                        s.MaMonHoc,
+        //                        d.KiHoc,
+        //                    }
+        //            );
+
+        //        // group by ki hoc
+        //        var group = queryDetailCTKJoinSubJect
+        //            .GroupBy(dCtk => dCtk.KiHoc)
+        //            .Select(g => new
+        //            {
+        //                KiHoc = g.Key,
+        //                Subjects = g.Select(s => new DetailCTK_Subject_Dto
+        //                    {
+        //                        Id = s.Id,
+        //                        MaMonHoc = s.MaMonHoc,
+        //                        SubjectName = s.SubjectName,
+        //                        SoTinChi = s.SoTinChi,
+        //                        MaMonHoc = s.MaMonHoc,
+        //                }).ToList(),
+        //            });
+
+        //        // create list to restore information about Thong tin chi tiet chuong trinh khung cua tung ki hoc
+        //        var listSemester = new List<SemesterDto>();
+
+        //        foreach (var item in group)
+        //        {
+        //            listSemester.Add(
+        //                new SemesterDto { KiHoc = item.KiHoc, Subjects = item.Subjects }
+        //            );
+        //        }
+
+        //        var rtnCTK = new CTKDto
+        //        {
+        //            Id = existCTK.Id,
+        //            ChuyenNganhId = existCTK.ChuyenNganhId,
+        //            TongTinChi = existCTK.TongTinChi,
+        //            detailCTKByKiHocDtos = listSemester,
+        //        };
+
+        //        return rtnCTK;
+        //    }
+        //}
+
+
         public CTKDto DetailCTKByChuyenNganhId(string chuyenNganhId)
         {
             var existCTK = _dbContext.ChuongTrinhKhungs.FirstOrDefault(s =>
-                s.ChuyenNganhId.Equals(chuyenNganhId)
+                s.ChuyenNganhId == chuyenNganhId
             );
             if (existCTK == null)
             {
@@ -187,46 +298,19 @@ namespace Server.Services.Implements
             }
             else
             {
-                // join detailCtk with Subject to get information of subject
-                var queryDetailCTKJoinSubJect = _dbContext
-                    .DetailCTKs.Where(dCtk => dCtk.ChuongTrinhKhungId == existCTK.Id);
-                    //.Join(
-                    //    _dbContext.Subjects,
-                    //    d => d.MaMonHoc,
-                    //    s => s.Id,
-                    //    (d, s) =>
-                    //        new
-                    //        {
-                    //            d.Id,
-                    //            SubjectId = s.Id,
-                    //            SubjectName = s.Name,
-                    //            s.SoTinChi,
-                    //            s.MaMonHoc,
-                    //            d.KiHoc,
-                    //        }
-                    //);
-
-                // group by ki hoc
-                var group = queryDetailCTKJoinSubJect
+                var queryCtk = _dbContext
+                    .DetailCTKs.Where(c => c.ChuongTrinhKhungId == existCTK.Id)
                     .GroupBy(dCtk => dCtk.KiHoc)
                     .Select(g => new
                     {
                         KiHoc = g.Key,
-                        Subjects = g.Select(s => new DetailCTK_Subject_Dto
-                            {
-                                Id = s.Id,
-                                MaMonHoc = s.MaMonHoc,
-                                //SubjectName = s.SubjectName,
-                                //SoTinChi = s.SoTinChi,
-                                //MaMonHoc = s.MaMonHoc,
-                            })
-                            .ToList(),
+                        Subjects = g.Select(s => s.MaMonHoc).ToList(),
                     });
 
                 // create list to restore information about Thong tin chi tiet chuong trinh khung cua tung ki hoc
                 var listSemester = new List<SemesterDto>();
 
-                foreach (var item in group)
+                foreach (var item in queryCtk)
                 {
                     listSemester.Add(
                         new SemesterDto { KiHoc = item.KiHoc, Subjects = item.Subjects }
@@ -237,7 +321,7 @@ namespace Server.Services.Implements
                 {
                     Id = existCTK.Id,
                     ChuyenNganhId = existCTK.ChuyenNganhId,
-                    TongTinChi = existCTK.TongTinChi,
+                    //TongTinChi = existCTK.TongTinChi,
                     detailCTKByKiHocDtos = listSemester,
                 };
 

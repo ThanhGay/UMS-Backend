@@ -6,7 +6,8 @@ namespace Server.Dtos.ChuongTrinhKhung
     public class SemesterDto
     {
         public required string KiHoc { get; set; }
-        public required List<DetailCTK_Subject_Dto> Subjects { get; set; }
-        
+        //public required List<DetailCTK_Subject_Dto> Subjects { get; set; }
+        public required List<string> Subjects { get; set; }
+
     }
 }
