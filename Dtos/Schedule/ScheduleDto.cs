@@ -1,12 +1,13 @@
 ﻿namespace Server.Dtos.Schedule
 {
-    public class GetScheduleDto
+    public class ScheduleDto
     {
-        public int Id { get; set; }
+        public int ScheduleId { get; set; }
         public int LopHpId { get; set; }
-        public int RoomId { get; set; }
+        public required string ClassName { get; set; }
+        public string? MaMonHoc { get; set; }
+        public required string SubjectName { get; set; }
         public required string RoomName { get; set; }
-        public required string TeacherId { get; set; }
         public int CaHoc { get; set; }
         public DateOnly StartAt { get; set; }
         public int Status { get; set; }

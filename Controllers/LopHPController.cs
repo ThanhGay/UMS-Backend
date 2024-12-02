@@ -116,11 +116,24 @@ namespace Server.Controllers
         }
 
         [HttpGet("get-lhp-by-student/{studentId}")]
-        public IActionResult GetLopHpByStudentId(string studentId)
+        public IActionResult GetLopHpByStudentId(string studentId, FilterDto input)
         {
             try
             {
-                return Ok(_lhpService.GetAllLopHpByStudentId(studentId));
+                return Ok(_lhpService.GetAllLopHpByStudentId(studentId, input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("get-lhp-by-teacher/{teacherId}")]
+        public IActionResult GetLopHpByTeacherId(string teacherId, FilterDto input)
+        {
+            try
+            {
+                return Ok(_lhpService.GetAllLopHpByTeacherId(teacherId, input));
             }
             catch (Exception ex)
             {

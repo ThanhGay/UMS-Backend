@@ -13,7 +13,7 @@ namespace Server.Entities
         public required string TeacherId { get; set; }
         public int RoomId { get; set; }
         public int CaHoc { get; set; }
-        public DateTime StartAt { get; set; }
+        public DateOnly StartAt { get; set; }
         public int Status { get; set; } = 0; // 0 - not taken place, 1 - taken place, 2 - postponed
     }
 }

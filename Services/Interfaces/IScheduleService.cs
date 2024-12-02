@@ -6,7 +6,8 @@ namespace Server.Services.Interfaces
     {
         public List<GetScheduleDto> GetScheduleOfClassHp(int lopHpId);
         public void CreateScheduleOfClassHP(CreateScheduleOfLopHp input);
-        public List<ScheduleTeacherDto> ScheduleOfTeacher(string teacherId);
+        public List<ScheduleDto> ScheduleOfTeacher(string teacherId);
+        public List<ScheduleDto> ScheduleOfStudent(string studentId);
         public void PostponeLesson(int id);
     }
 }

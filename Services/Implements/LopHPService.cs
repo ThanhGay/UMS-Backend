@@ -51,7 +51,7 @@ namespace Server.Services.Implements
             if (!string.IsNullOrEmpty(input.Keyword))
             {
                 resultQuery = resultQuery.Where(l =>
-                    l.MaMonHoc.ToLower().Contains(input.Keyword.ToLower())
+                    l.ClassName.ToLower().Contains(input.Keyword.ToLower())
                 );
             }
 
@@ -233,47 +233,105 @@ namespace Server.Services.Implements
             }
         }
 
-        public List<AllLopHpByStudentIdDto> GetAllLopHpByStudentId(string studentId)
+        public PageResultDto<AllLopHpByStudentIdDto> GetAllLopHpByStudentId(
+            string studentId,
+            FilterDto input
+        )
         {
-            var existStudent = _dbContext.LopHP_Students.Any(s => s.StudentId.Equals(studentId));
-            if (existStudent)
-            {
-                var query = _dbContext
-                    .LopHP_Students.Where(s => s.StudentId.Equals(studentId))
-                    .Join(
-                        _dbContext.ClassHPs,
-                        s => s.LopHpId,
-                        c => c.Id,
-                        (s, c) =>
-                            new
-                            {
-                                c.ClassName,
-                                LopHpId = c.Id,
-                                c.MaMonHoc,
-                                c.TenMonHoc,
-                            }
-                    );
+            var result = new PageResultDto<AllLopHpByStudentIdDto>();
 
-                var resultQuery = query
-                    .Select(r => new AllLopHpByStudentIdDto
-                    {
-                        TeacherIds = _dbContext
-                            .LopHP_Teachers.Where(c => c.LopHpId == r.LopHpId)
-                            .Select(c => c.TeacherId)
-                            .ToList(),
-                        ClassName = r.ClassName,
-                        MaMonHoc = r.MaMonHoc,
-                        LopHpId = r.LopHpId,
-                        TenMonHoc = r.TenMonHoc,
-                    })
-                    .ToList();
+            var query = _dbContext
+                .LopHP_Students.Where(s => s.StudentId.Equals(studentId))
+                .Join(
+                    _dbContext.ClassHPs,
+                    s => s.LopHpId,
+                    c => c.Id,
+                    (s, c) =>
+                        new
+                        {
+                            c.ClassName,
+                            LopHpId = c.Id,
+                            c.MaMonHoc,
+                            c.TenMonHoc,
+                            c.SoTinChi,
+                        }
+                );
 
-                return resultQuery;
-            }
-            else
+            var resultQuery = query.Select(r => new AllLopHpByStudentIdDto
             {
-                return [];
+                TeacherIds = _dbContext
+                    .LopHP_Teachers.Where(c => c.LopHpId == r.LopHpId)
+                    .Select(c => c.TeacherId)
+                    .ToList(),
+                ClassName = r.ClassName,
+                MaMonHoc = r.MaMonHoc,
+                LopHpId = r.LopHpId,
+                TenMonHoc = r.TenMonHoc,
+                SoTinChi = r.SoTinChi,
+            });
+
+            if (!string.IsNullOrEmpty(input.Keyword))
+            {
+                resultQuery = resultQuery.Where(c =>
+                    c.ClassName.ToLower().Contains(input.Keyword.ToLower())
+                );
             }
+
+            var totalItems = resultQuery.Count();
+
+            resultQuery = resultQuery.Skip(input.SkipCount()).Take(input.PageSize);
+
+            result.TotalItem = totalItems;
+            result.Items = resultQuery;
+
+            return result;
+        }
+
+        public PageResultDto<AllLopHpByTeacherIdDto> GetAllLopHpByTeacherId(
+            string teacherId,
+            FilterDto input
+        )
+        {
+            var result = new PageResultDto<AllLopHpByTeacherIdDto>();
+
+            var query = _dbContext
+                .LopHP_Teachers.Where(t => t.TeacherId == teacherId)
+                .Join(
+                    _dbContext.ClassHPs,
+                    t => t.LopHpId,
+                    c => c.Id,
+                    (t, c) =>
+                        new
+                        {
+                            LopHpId = c.Id,
+                            c.MaMonHoc,
+                            c.TenMonHoc,
+                            c.ClassName,
+                            c.SoTinChi,
+                        }
+                )
+                .Select(r => new AllLopHpByTeacherIdDto
+                {
+                    LopHpId = r.LopHpId,
+                    MaMonHoc = r.MaMonHoc,
+                    TenMonHoc = r.TenMonHoc,
+                    ClassName = r.ClassName,
+                    SoTinChi = r.SoTinChi,
+                });
+
+            if (!string.IsNullOrEmpty(input.Keyword))
+            {
+                query = query.Where(c => c.ClassName.ToLower().Contains(input.Keyword.ToLower()));
+            }
+
+            var totalItems = query.Count();
+
+            query = query.Skip(input.SkipCount()).Take(input.PageSize);
+
+            result.TotalItem = totalItems;
+            result.Items = query;
+
+            return result;
         }
 
         public void DeleteLopHP(int lopHpId)
@@ -296,7 +354,7 @@ namespace Server.Services.Implements
                         var listTeacherInClass = _dbContext.LopHP_Teachers.Where(t =>
                             t.LopHpId == lopHpId
                         );
-                        var listSchedule = _dbContext.LopHP_Rooms.Where(r => r.LopHpId == lopHpId );
+                        var listSchedule = _dbContext.LopHP_Rooms.Where(r => r.LopHpId == lopHpId);
 
                         foreach (var item in listStudentInClass)
                         {

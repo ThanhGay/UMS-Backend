@@ -56,6 +56,19 @@ namespace Server.Controllers
             }
         }
 
+        [HttpGet("student/{studentId}")]
+        public IActionResult GetScheduleOfStudent(string studentId)
+        {
+            try
+            {
+                return Ok(_scheduleService.ScheduleOfStudent(studentId));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPut("postpone/{scId}")]
         public IActionResult PostPoneALesson(int scId)
         {
