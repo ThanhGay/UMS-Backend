@@ -8,6 +8,7 @@
         public string? MaMonHoc { get; set; }
         public required string SubjectName { get; set; }
         public required string RoomName { get; set; }
+        public string? TeacherId { get; set; }
         public int CaHoc { get; set; }
         public DateOnly StartAt { get; set; }
         public int Status { get; set; }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Server.Dtos.Common;
 using Server.Dtos.Schedule;
 using Server.Services.Interfaces;
 
@@ -36,6 +37,19 @@ namespace Server.Controllers
             try
             {
                 return Ok(_scheduleService.GetScheduleOfClassHp(lopHpId));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("all")]
+        public IActionResult GetAll(FilterDto pageFilter, FilterScheduleDto filter)
+        {
+            try
+            {
+                return Ok(_scheduleService.GetAll(pageFilter, filter));
             }
             catch (Exception ex)
             {
@@ -82,6 +96,5 @@ namespace Server.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
     }
 }

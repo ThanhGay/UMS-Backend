@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Server.DbContexts;
+using Server.Dtos.Common;
 using Server.Dtos.Schedule;
 using Server.Entities;
 using Server.Exceptions;
@@ -16,6 +17,66 @@ namespace Server.Services.Implements
         {
             _dbContext = dbContext;
             _baseService = baseService;
+        }
+
+        public PageResultDto<ScheduleDto> GetAll(FilterDto pageFilter, FilterScheduleDto filter)
+        {
+            var result = new PageResultDto<ScheduleDto>();
+
+            var query =
+                from a in _dbContext.LopHP_Rooms
+                join b in _dbContext.Rooms on a.RoomId equals b.Id
+                join c in _dbContext.ClassHPs on a.LopHpId equals c.Id
+                orderby a.StartAt
+                select new
+                {
+                    ScheduleId = a.Id,
+                    a.LopHpId,
+                    c.ClassName,
+                    c.MaMonHoc,
+                    c.TenMonHoc,
+                    a.TeacherId,
+                    a.RoomId,
+                    b.Name,
+                    b.Building,
+                    a.StartAt,
+                    a.CaHoc,
+                    a.Status,
+                };
+
+            if (!string.IsNullOrEmpty(filter.TeacherId))
+            {
+                query = query.Where(sc => sc.TeacherId == filter.TeacherId);
+            }
+            if (!string.IsNullOrEmpty(filter.Building))
+            {
+                query = query.Where(sc => sc.Building == filter.Building);
+            }
+
+            query = query.Where(sc => sc.CaHoc == filter.CaHoc);
+
+            var finalQuery = query.Select(sc => new ScheduleDto
+            {
+                ClassName = sc.ClassName,
+                RoomName = sc.Name + "." + sc.Building,
+                CaHoc = sc.CaHoc,
+                SubjectName = sc.TenMonHoc,
+                LopHpId = sc.LopHpId,
+                MaMonHoc = sc.MaMonHoc,
+                TeacherId = sc.TeacherId,
+                ScheduleId = sc.ScheduleId,
+                StartAt = sc.StartAt,
+                Status = sc.Status,
+            });
+
+            var totalItems = finalQuery.Count();
+
+            finalQuery = finalQuery.Skip(pageFilter.SkipCount()).Take(pageFilter.PageSize);
+
+            result.TotalItem = totalItems;
+            result.Items = finalQuery;
+
+            return result;
         }
 
         public void CreateScheduleOfClassHP(CreateScheduleOfLopHp input)
@@ -212,10 +273,10 @@ namespace Server.Services.Implements
              * Declare @StudentId nvarchar(255) = '314269'
              * print @StudentId
              *
-             * select B.Id, A.LopHpId, C.ClassName, C.MaMonHoc, C.TenMonHoc, R.Name, R.Building, B.CaHoc, B.StartAt, B.Status	
-             * from LopHP_Student as A 
-             *      join LopHP_Room as B on A.LopHpId = B.LopHpId 
-             *      join LopHP as C on A.LopHpId = C.Id 
+             * select B.Id, A.LopHpId, C.ClassName, C.MaMonHoc, C.TenMonHoc, R.Name, R.Building, B.CaHoc, B.StartAt, B.Status
+             * from LopHP_Student as A
+             *      join LopHP_Room as B on A.LopHpId = B.LopHpId
+             *      join LopHP as C on A.LopHpId = C.Id
              *      join Room as R on B.RoomId = R.Id
              * where A.StudentId = @StudentId
              * order by B.StartAt, B.CaHoc
@@ -248,7 +309,9 @@ namespace Server.Services.Implements
             }
             else
             {
-                throw new Exception($"Sinh viên chưa tham gia lớp học nào hoặc mã sinh viên không chính xác.");
+                throw new Exception(
+                    $"Sinh viên chưa tham gia lớp học nào hoặc mã sinh viên không chính xác."
+                );
             }
         }
     }
