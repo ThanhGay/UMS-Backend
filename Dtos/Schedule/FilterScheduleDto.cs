@@ -8,7 +8,7 @@ namespace Server.Dtos.Schedule
         public string? Building { get; set; }
 
         [FromQuery(Name = "caHoc")]
-        public int CaHoc { get; set; } = 1;
+        public int CaHoc { get; set; }
 
         [FromQuery(Name = "teacherId")]
         public string? TeacherId { get; set; }

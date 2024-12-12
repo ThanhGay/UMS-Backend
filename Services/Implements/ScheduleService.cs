@@ -27,7 +27,7 @@ namespace Server.Services.Implements
                 from a in _dbContext.LopHP_Rooms
                 join b in _dbContext.Rooms on a.RoomId equals b.Id
                 join c in _dbContext.ClassHPs on a.LopHpId equals c.Id
-                orderby a.StartAt
+                orderby a.StartAt, a.CaHoc
                 select new
                 {
                     ScheduleId = a.Id,
@@ -53,7 +53,10 @@ namespace Server.Services.Implements
                 query = query.Where(sc => sc.Building == filter.Building);
             }
 
-            query = query.Where(sc => sc.CaHoc == filter.CaHoc);
+            if (int.IsPositive(filter.CaHoc))
+            {
+                query = query.Where(sc => sc.CaHoc == filter.CaHoc);
+            }
 
             var finalQuery = query.Select(sc => new ScheduleDto
             {
