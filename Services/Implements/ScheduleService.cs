@@ -108,7 +108,9 @@ namespace Server.Services.Implements
             {
                 var totalExistLesson =
                     existClassHP.TotalLessons
-                    - _dbContext.LopHP_Rooms.Count(r => r.LopHpId == input.LopHpId);
+                    - _dbContext.LopHP_Rooms.Count(r =>
+                        r.LopHpId == input.LopHpId && r.Status != 2
+                    );
 
                 List<DateOnly> daysInTimes = new List<DateOnly>();
 
@@ -136,11 +138,12 @@ namespace Server.Services.Implements
                             s.StartAt == date
                             && s.CaHoc == input.CaHoc
                             && s.LopHpId == input.LopHpId
+                            && s.Status != 2
                         );
                         if (exist)
                         {
                             throw new Exception(
-                                $"Đã có lịch học ca {input.CaHoc} tại phòng này vào ngày {date}"
+                                $"Đã có lịch học ca {input.CaHoc} tại phòng này vào ngày {date.ToString("DD/MM/YYYY")}"
                             );
                         }
                         else
@@ -210,15 +213,40 @@ namespace Server.Services.Implements
             var existItem = _dbContext.LopHP_Rooms.FirstOrDefault(sc => sc.Id == id);
             if (existItem != null)
             {
-                existItem.Status = 2;
+                if (existItem.Status == 1)
+                {
+                    throw new Exception($"Không thể tạm ngưng buổi học đã diễn ra");
+                }
+                else
+                {
+                    existItem.Status = 2;
 
-                _dbContext.LopHP_Rooms.Update(existItem);
-                _dbContext.SaveChanges();
+                    _dbContext.LopHP_Rooms.Update(existItem);
+                    _dbContext.SaveChanges();
+                }
             }
             else
             {
                 throw new Exception("Không tìm thấy");
             }
+        }
+
+        public void SyncSchedule()
+        {
+            var allscheduleQuery = _dbContext
+                .LopHP_Rooms.Where(sc =>
+                    sc.Status != 2 && sc.StartAt < DateOnly.FromDateTime(DateTime.Now)
+                )
+                .ToList();
+
+            foreach (var item in allscheduleQuery)
+            {
+                item.Status = 1;
+
+                _dbContext.LopHP_Rooms.Update(item);
+            }
+
+            _dbContext.SaveChanges();
         }
 
         public List<ScheduleDto> ScheduleOfTeacher(string teacherId)

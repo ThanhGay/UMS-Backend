@@ -83,6 +83,19 @@ namespace Server.Controllers
             }
         }
 
+        [HttpPost("sync")]
+        public IActionResult Sync() {
+            try
+            {
+                _scheduleService.SyncSchedule();
+                return Ok("Đồng bộ lịch thành công");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPut("postpone/{scId}")]
         public IActionResult PostPoneALesson(int scId)
         {
