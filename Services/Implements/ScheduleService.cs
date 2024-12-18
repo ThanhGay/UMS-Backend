@@ -137,13 +137,13 @@ namespace Server.Services.Implements
                         var exist = _dbContext.LopHP_Rooms.Any(s =>
                             s.StartAt == date
                             && s.CaHoc == input.CaHoc
-                            && s.LopHpId == input.LopHpId
+                            && s.RoomId == input.RoomId
                             && s.Status != 2
                         );
                         if (exist)
                         {
                             throw new Exception(
-                                $"Đã có lịch học ca {input.CaHoc} tại phòng này vào ngày {date.ToString("DD/MM/YYYY")}"
+                                $"Đã có lịch học ca {input.CaHoc} tại phòng này vào ngày {date}"
                             );
                         }
                         else
